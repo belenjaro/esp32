@@ -1,2 +1,0 @@
-SSID='SalaTI'
-password='edupublica'
