@@ -18,7 +18,7 @@ from mqtt_local import config
 import uasyncio as asyncio
 import dht, machine
 
-d = dht.DHT22(machine.Pin(13))
+d = dht.DHT22(machine.Pin(25))
 
 def sub_cb(topic, msg, retained):
     print('Topic = {} -> Valor = {}'.format(topic.decode(), msg.decode()))
@@ -31,6 +31,9 @@ async def wifi_han(state):
 async def conn_han(client):
     await client.subscribe('temperatura', 1)
     await client.subscribe('humedad', 1)
+    await client.subscribe('setpoint', 1)
+    await client.subscribe('periodo', 1)
+    await client.subscribe('modo', 1)
 
 async def main(client):
     await client.connect()
@@ -49,6 +52,21 @@ async def main(client):
                 await client.publish('humedad', '{}'.format(humedad), qos = 1)
             except OSError as e:
                 print("sin sensor humedad")
+            try:
+                setpoint=30
+                await client.publish('setpoint', '{}'.format(setpoint), qos = 1)
+            except OSError as e:
+                print("sin setpoint")
+            try:
+                periodo=2
+                await client.publish('periodo', '{}'.format(periodo), qos = 1)
+            except OSError as e:
+                print("sin periodo")
+            try:
+                modo="automatico"
+                await client.publish('modo', '{}'.format(modo), qos = 1)
+            except OSError as e:
+                print("sin modo")
         except OSError as e:
             print("sin sensor")
         await asyncio.sleep(20)  # Broker is slow
