@@ -17,7 +17,17 @@ from mqtt_as import MQTTClient
 from mqtt_local import config
 import uasyncio as asyncio
 import dht, machine
+from machine import Pin, Timer, unique_id
+import json
+import ubinascii
+from settings import BROKER
 
+CLIENT_ID = ubinascii.hexlify(unique_id()).decode('utf-8')
+mqtt = MQTTClient(CLIENT_ID, BROKER, port=8883, keepalive=10, ssl=True)
+
+
+
+#sensor
 d = dht.DHT22(machine.Pin(25))
 
 def sub_cb(topic, msg, retained):
@@ -53,12 +63,12 @@ async def main(client):
             except OSError as e:
                 print("sin sensor humedad")
             try:
-                setpoint=30
+                setpoint=40
                 await client.publish('setpoint', '{}'.format(setpoint), qos = 1)
             except OSError as e:
                 print("sin setpoint")
             try:
-                periodo=2
+                periodo=3000
                 await client.publish('periodo', '{}'.format(periodo), qos = 1)
             except OSError as e:
                 print("sin periodo")
