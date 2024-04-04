@@ -167,8 +167,10 @@ async def task(client):
     monitoreo_task = asyncio.create_task(monitoreo())
     destello_task = asyncio.create_task(destello())
     main_task=asyncio.create_task(main(client))
-    await asyncio.gather(monitoreo_task, destello_task, main_task)
-
+    #await asyncio.gather(monitoreo_task, destello_task, main_task)
+    await monitoreo_task
+    await destello_task
+    await main_task
 def escribir_db():
     with open("db", "w+b") as f:
         db = btree.open(f)
@@ -181,9 +183,9 @@ def escribir_db():
 def leer_db():
     with open("db", "r+b") as f:
         db = btree.open(f)
-        parametros['setpoint']=db[b'setpoint']
-        parametros['periodo']=db[b'periodo']
-        parametros['modo']=db[b'modo']
+        parametros['setpoint']=float(db[b'setpoint'].decode())
+        parametros['periodo']=float(db[b'periodo'].decode())
+        parametros['modo']=db[b'modo'].decode()
         db.flush()
         db.close()
 
