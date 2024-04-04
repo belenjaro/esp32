@@ -15,14 +15,14 @@
 
 from mqtt_as import MQTTClient
 from mqtt_local import config
+from settings import BROKER
 import uasyncio as asyncio
 #import uasyncio as asyncio
 import dht, machine
 import json
 import ubinascii
-import unique_id
+from machine import unique_id
 import uos as os
-from settings import BROKER
 import btree
 #temperatura
 #humedad
@@ -43,7 +43,8 @@ parametros={
     }
 
 #sensor
-d = dht.DHT22(machine.Pin(25))
+d = dht.DHT22(machine.Pin(13))
+#25 anterior
 
 #led
 led = machine.Pin(27, machine.Pin.OUT)
@@ -123,6 +124,7 @@ async def conn_han(client):
     await client.subscribe('destello', 1)
     await client.subscribe('rele', 1)
 
+
 #lectura de temperatura y humedad
 async def monitoreo():
     while True:
@@ -136,6 +138,7 @@ async def monitoreo():
             else:
                 parametros['rele']='OFF'
                 rele.value(1)#apaga rele
+        print("monitoreo")
         await asyncio.sleep(7)
 
 #destellará por unos segundos 
@@ -151,26 +154,22 @@ async def destello():
                 led.value(1)
                 await asyncio.sleep(0.5)
             bandestello=False
-            
+        print("destello")
+        await asyncio.sleep(5)  
 async def main(client):
     await client.connect()
     await asyncio.sleep(2)  # Esperar para dar tiempo al broker
     while True:
         try:
-            await client.publish(f"iot/{CLIENT_ID}", json.dumps(parametros), qos=1)
+            await client.publish(f"hector/{CLIENT_ID}", json.dumps(parametros), qos=1)
         except OSError as e:
             print(f"Fallo al publicar: {e}")
         await asyncio.sleep(parametros['periodo'])  # Esperar según el periodo definido
   
 async def task(client):
     # Ejecutar monitoreo(),destello() y main() en paralelo
-    monitoreo_task = asyncio.create_task(monitoreo())
-    destello_task = asyncio.create_task(destello())
-    main_task=asyncio.create_task(main(client))
-    #await asyncio.gather(monitoreo_task, destello_task, main_task)
-    await monitoreo_task
-    await destello_task
-    await main_task
+    await asyncio.gather(monitoreo(), destello(), main(client))
+
 def escribir_db():
     with open("db", "w+b") as f:
         db = btree.open(f)
