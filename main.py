@@ -47,7 +47,8 @@ async def main(client):
                         ('temperatura',temperatura),
                         ('humedad',humedad)
                     ]))
-                    await client.publish('iot/2024/'+str(config['client_id']), datos, qos = 1)
+                    dispositivo=config['client_id'].decode('utf-8')
+                    await client.publish('iot/2024/'+ dispositivo, datos, qos = 1)
                 except OSError as e:
                     print("sin sensor temperatura")
             except OSError as e:
@@ -60,7 +61,7 @@ async def main(client):
 config['subs_cb'] = sub_cb
 config['connect_coro'] = conn_han
 config['wifi_coro'] = wifi_han
-config['ssl'] = True
+config['ssl'] = False
 
 # Set up client
 MQTTClient.DEBUG = True  # Optional
