@@ -39,6 +39,7 @@ async def main(client):
     while True:
         try:
             d.measure()
+<<<<<<< HEAD
             try:
                 temperatura=d.temperature()
                 try:
@@ -53,6 +54,15 @@ async def main(client):
                     print("sin sensor temperatura")
             except OSError as e:
                 print("sin sensor humedad")
+=======
+            temperatura=d.temperature()
+            humedad=d.humidity()
+            datos=json.dumps(OrderedDict([
+                ('temperatura',temperatura),
+                ('humedad',humedad)
+            ]))
+            await client.publish('iot/2024/' + config['client_id'].decode('utf-8'), datos, qos = 1)
+>>>>>>> 17cef05e26623004faddc2e837fc547188680ffc
         except OSError as e:
             print("sin sensor")
         await asyncio.sleep(30)  # Broker is slow
@@ -61,7 +71,7 @@ async def main(client):
 config['subs_cb'] = sub_cb
 config['connect_coro'] = conn_han
 config['wifi_coro'] = wifi_han
-config['ssl'] = True
+config['ssl'] = False
 
 # Set up client
 MQTTClient.DEBUG = True  # Optional
