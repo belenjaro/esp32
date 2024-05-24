@@ -1,15 +1,16 @@
 # mqtt_local.py Local configuration for mqtt_as demo programs.
 from sys import platform, implementation
 from mqtt_as import config
-from settings import SSID, PASS, BROKER
+from settings import SSID, PASS, BROKER, USR_MQTT, PASS_MQTT, PUERTO_MQTTS
 
-config['server'] = BROKER  # Change to suit
-#  config['server'] = 'test.mosquitto.org'
+config['server'] = BROKER
 
 # Not needed if you're only using ESP8266
 config['ssid'] = SSID
 config['wifi_pw'] = PASS
-
+config['user'] = USR_MQTT
+config['password'] = PASS_MQTT
+config['port']=PUERTO_MQTTS
 # For demos ensure same calling convention for LED's on all platforms.
 # ESP8266 Feather Huzzah reference board has active low LED's on pins 0 and 2.
 # ESP32 is assumed to have user supplied active low LED's on same pins.
