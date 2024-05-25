@@ -15,7 +15,6 @@
 
 from mqtt_as import MQTTClient
 from mqtt_local import config
-from settings import BROKER
 import uasyncio as asyncio
 #import uasyncio as asyncio
 import dht, machine
