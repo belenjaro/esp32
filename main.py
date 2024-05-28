@@ -42,8 +42,8 @@ parametros={
     }
 
 #sensor
-d = dht.DHT22(machine.Pin(13))
-#25 anterior
+d = dht.DHT22(machine.Pin(25))
+#13 anterior
 
 #led
 led = machine.Pin(27, machine.Pin.OUT)
