@@ -42,8 +42,8 @@ parametros={
     }
 
 #sensor
-d = dht.DHT22(machine.Pin(13))
-#25 anterior
+d = dht.DHT22(machine.Pin(25))
+#13 anterior
 
 #led
 led = machine.Pin(27, machine.Pin.OUT)
@@ -157,7 +157,7 @@ async def destello():
         await asyncio.sleep(5)  
 async def main(client):
     await client.connect()
-    await asyncio.sleep(2)  # Esperar para dar tiempo al broker
+    await asyncio.sleep(10)  # Esperar para dar tiempo al broker
     while True:
         try:
             await client.publish(f"hector/{CLIENT_ID}", json.dumps(parametros), qos=1)
