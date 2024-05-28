@@ -166,8 +166,11 @@ async def main(client):
         await asyncio.sleep(parametros['periodo'])  # Esperar según el periodo definido
   
 async def task(client):
-    # Ejecutar monitoreo(),destello() y main() en paralelo
-    await asyncio.gather(monitoreo(), destello(), main(client))
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(monitoreo())
+        tg.create_task(destello())
+        tg.create_task(main(client))
+    #await asyncio.gather(monitoreo(), destello(), main(client))
 
 def escribir_db():
     with open("db", "w+b") as f:
