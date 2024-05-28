@@ -42,8 +42,8 @@ parametros={
     }
 
 #sensor
-d = dht.DHT22(machine.Pin(25))
-#13 anterior
+d = dht.DHT22(machine.Pin(13))
+#25 anterior
 
 #led
 led = machine.Pin(27, machine.Pin.OUT)
@@ -157,7 +157,7 @@ async def destello():
         await asyncio.sleep(5)  
 async def main(client):
     await client.connect()
-    await asyncio.sleep(10)  # Esperar para dar tiempo al broker
+    await asyncio.sleep(2)  # Esperar para dar tiempo al broker
     while True:
         try:
             await client.publish(f"hector/{CLIENT_ID}", json.dumps(parametros), qos=1)
@@ -166,13 +166,8 @@ async def main(client):
         await asyncio.sleep(parametros['periodo'])  # Esperar según el periodo definido
   
 async def task(client):
-    """
-    async with asyncio.TaskGroup() as tg:
-        tg.create_task(monitoreo())
-        tg.create_task(destello())
-        tg.create_task(main(client))
-    """
-    await asyncio.gather(main(client), monitoreo(), destello())
+    # Ejecutar monitoreo(),destello() y main() en paralelo
+    await asyncio.gather(main(client),monitoreo(), destello())
 
 def escribir_db():
     with open("db", "w+b") as f:
