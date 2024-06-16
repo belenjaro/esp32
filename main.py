@@ -19,7 +19,7 @@ CLIENT_ID = ubinascii.hexlify(unique_id()).decode('utf-8')
 
 parametros={
     'temperatura':0.0,
-    'periodo':30,
+    'periodo':10,
     'setpoint1':23.5,
     'modo1':'auto',
     'setpoint2':26.5,
