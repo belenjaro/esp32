@@ -1,17 +1,3 @@
-# (C) Copyright Peter Hinch 2017-2019.
-# Released under the MIT licence.
-
-# This demo publishes to topic "result" and also subscribes to that topic.
-# This demonstrates bidirectional TLS communication.
-# You can also run the following on a PC to verify:
-# mosquitto_sub -h test.mosquitto.org -t result
-# To get mosquitto_sub to use a secure connection use this, offered by @gmrza:
-# mosquitto_sub -h <my local mosquitto server> -t result -u <username> -P <password> -p 8883
-
-# Public brokers https://github.com/mqtt/mqtt.github.io/wiki/public_brokers
-
-# red LED: ON == WiFi fail
-# green LED heartbeat: demonstrates scheduler is running.
 
 from mqtt_as import MQTTClient
 from mqtt_local import config
@@ -39,99 +25,66 @@ parametros={
     'setpoint2':26.5,
     'modo2':'manual'
     }
-#https://pasionelectronica.com/esp32-caracteristicas-y-pines/
-#sensor
+# sensor
 #d = dht.DHT22(machine.Pin(25))
 
-#rele1 ventilador1
-rele1= machine.Pin(9, machine.Pin.OUT)
-rele1.value(1) #activo en bajo
-#esta apagado
+# relé 1 ventilador 1
+rele1 = machine.Pin(9, machine.Pin.OUT)
+rele1.value(1)  # activo en bajo
 
-#rele2 ventilador2
-rele2= machine.Pin(10, machine.Pin.OUT)
-rele2.value(1) #activo en bajo
+# relé 2 ventilador 2
+rele2 = machine.Pin(10, machine.Pin.OUT)
+rele2.value(1)  # activo en bajo
 
-#modificacion de parametros
 def sub_cb(topic, msg, retained):
-    #redibo y decodifico
-    topicodeco=topic.decode()
-    msgdeco=msg.decode()
-    global bandestello
-    cambio=False    
-    #muestro el topico y el mensaje
+    topicodeco = topic.decode()
+    msgdeco = msg.decode()
+    global parametros
+    cambio = False
     print('Topic = {} -> Valor = {}'.format(topicodeco, msgdeco))
-    #condiciones para los topicos 
-    if topicodeco == 'setpoint1':
-        try:
-            parametros['setpoint1']=float(msgdeco)
-            cambio=True
-        except OSError:
-            print("ERROR, debe ser flotante")
-    elif topicodeco == 'setpoint2':
-        try:
-            parametros['setpoint2']=float(msgdeco)
-            cambio=True
-        except OSError:
-            print("ERROR, debe ser flotante")
-    elif topicodeco=="modo1":
-        banmodo= msgdeco.lower()
-        if banmodo == "manual":
-            parametros['modo1']=banmodo
-            cambio=True
-            print("Modo manual")
-        elif banmodo == "auto":
-            parametros['modo1']=banmodo
-            print("Modo automatico")
-            cambio=True
-        else:
-            print("Modo incorrecto debe ser manual/auto")
-    elif topicodeco == "modo2":
-        banmodo = msgdeco.lower()
-        if banmodo == "manual":
-            parametros['modo2']=banmodo
-            cambio=True
-            print("Modo manual")
-        elif banmodo == "auto":
-            parametros['modo2']=banmodo
-            print("Modo automatico")
-            cambio=True
-        else:
-            print("Modo incorrecto debe ser manual/auto")
-    elif topicodeco== "rele1":
-        banrele= msgdeco.upper()
-        if parametros['modo1']=="manual":
-            if banrele == "ON":
-                rele1.value(0)
-                print("Rele encendido")
-            elif banrele == "OFF":
-                rele1.value(1)
-                print("Rele apagado")
-    elif topicodeco== "rele2":
-        banrele= msgdeco.upper()
-        if parametros['modo2']=="manual":
-            if banrele == "ON":
-                rele2.value(0)
-                print("Rele encendido")
-            elif banrele == "OFF":
-                rele2.value(1)
-                print("Rele apagado")
-    elif topicodeco == "periodo":
-        try:
-            parametros['periodo']=float(msgdeco)
-            cambio=True
-        except OSError:
-            print("ERROR, debe ser flotante")
-    else:
-        print("No hay dicho topico")
-    
-    if cambio is True:
+
+    try:
+        if topicodeco == 'setpoint1':
+            parametros['setpoint1'] = float(msgdeco)
+            cambio = True
+        elif topicodeco == 'setpoint2':
+            parametros['setpoint2'] = float(msgdeco)
+            cambio = True
+        elif topicodeco == "modo1":
+            banmodo = msgdeco.lower()
+            if banmodo in ["manual", "auto"]:
+                parametros['modo1'] = banmodo
+                cambio = True
+                print(f"Modo {banmodo}")
+        elif topicodeco == "modo2":
+            banmodo = msgdeco.lower()
+            if banmodo in ["manual", "auto"]:
+                parametros['modo2'] = banmodo
+                cambio = True
+                print(f"Modo {banmodo}")
+        elif topicodeco == "rele1":
+            banrele = msgdeco.upper()
+            if parametros['modo1'] == "manual" and banrele in ["ON", "OFF"]:
+                rele1.value(0 if banrele == "ON" else 1)
+                print(f"Rele {banrele.lower()}")
+        elif topicodeco == "rele2":
+            banrele = msgdeco.upper()
+            if parametros['modo2'] == "manual" and banrele in ["ON", "OFF"]:
+                rele2.value(0 if banrele == "ON" else 1)
+                print(f"Rele {banrele.lower()}")
+        elif topicodeco == "periodo":
+            parametros['periodo'] = float(msgdeco)
+            cambio = True
+    except Exception as e:
+        print(f"Error: {e}")
+
+    if cambio:
         escribir_db()
+
 async def wifi_han(state):
     print('Wifi is ', 'up' if state else 'down')
     await asyncio.sleep(2)
 
-#subcripcion a los topicos 
 async def conn_han(client):
     await client.subscribe('setpoint1', 1)
     await client.subscribe('modo1', 1)
@@ -141,28 +94,30 @@ async def conn_han(client):
     await client.subscribe('rele2', 1)
     await client.subscribe('periodo', 1)
 
-
-#lectura de temperatura
 async def monitoreo():
     while True:
-        #d.measure()
-        #parametros['temperatura']=d.temperature()
-        if parametros['modo1']=="auto":
-            if parametros['temperatura']>parametros['setpoint1']:
-                parametros['rele1']='ON'
-                rele1.value(0)#enciende rele
-            else:
-                parametros['rele1']='OFF'
-                rele1.value(1)#apaga rele
-        if parametros['modo2']=="auto":
-            if parametros['temperatura']>parametros['setpoint2']:
-                parametros['rele2']='ON'
-                rele2.value(0)#enciende rele
-            else:
-                parametros['rele2']='OFF'
-                rele2.value(1)#apaga rele       
-        await asyncio.sleep(60)
-  
+        try:
+            #d.measure()
+            #parametros['temperatura'] = d.temperature()
+            if parametros['modo1'] == "auto":
+                if parametros['temperatura'] > parametros['setpoint1']:
+                    parametros['rele1'] = 'ON'
+                    rele1.value(0)  # enciende rele
+                else:
+                    parametros['rele1'] = 'OFF'
+                    rele1.value(1)  # apaga rele
+            if parametros['modo2'] == "auto":
+                if parametros['temperatura'] > parametros['setpoint2']:
+                    parametros['rele2'] = 'ON'
+                    rele2.value(0)  # enciende rele
+                else:
+                    parametros['rele2'] = 'OFF'
+                    rele2.value(1)  # apaga rele
+        except Exception as e:
+            print(f"Error en monitoreo: {e}")
+        
+        await asyncio.sleep(1)  # Reduce el tiempo de sleep
+
 async def main(client):
     await client.connect()
     await asyncio.sleep(4)  # Esperar para dar tiempo al broker
@@ -172,10 +127,9 @@ async def main(client):
         except OSError as e:
             print(f"Fallo al publicar: {e}")
         await asyncio.sleep(parametros['periodo'])  # Esperar según el periodo definido
-  
+
 async def task(client):
-    # Ejecutar monitoreo()y main() en paralelo
-    await asyncio.gather(main(client),monitoreo())
+    await asyncio.gather(main(client), monitoreo())
 
 def escribir_db():
     with open("db", "w+b") as f:
@@ -184,22 +138,21 @@ def escribir_db():
         db[b'setpoint1'] = b"{}".format(str(parametros['setpoint1']))
         db[b'modo1'] = b"{}".format(str(parametros['modo1']))
         db[b'setpoint2'] = b"{}".format(str(parametros['setpoint2']))
-        db[b'modo2'] = b"{}".format(str(parametros['modo2']))        
-        db.flush()
-        db.close()
-    
-def leer_db():
-    with open("db", "r+b") as f:
-        db = btree.open(f)
-        parametros['periodo']=float(db[b'periodo'].decode())
-        parametros['setpoint1']=float(db[b'setpoint1'].decode())
-        parametros['modo1']=db[b'modo1'].decode()
-        parametros['setpoint2']=float(db[b'setpoint2'].decode())
-        parametros['modo2']=db[b'modo2'].decode()
+        db[b'modo2'] = b"{}".format(str(parametros['modo2']))
         db.flush()
         db.close()
 
-# Define configuration
+def leer_db():
+    with open("db", "r+b") as f:
+        db = btree.open(f)
+        parametros['periodo'] = float(db[b'periodo'].decode())
+        parametros['setpoint1'] = float(db[b'setpoint1'].decode())
+        parametros['modo1'] = db[b'modo1'].decode()
+        parametros['setpoint2'] = float(db[b'setpoint2'].decode())
+        parametros['modo2'] = db[b'modo2'].decode()
+        db.flush()
+        db.close()
+
 config['subs_cb'] = sub_cb
 config['connect_coro'] = conn_han
 config['wifi_coro'] = wifi_han
@@ -211,12 +164,11 @@ if 'db' not in os.listdir():
 else:
     print("Leyendo base de datos...")
     leer_db()
-# Set up client
-MQTTClient.DEBUG = True  # Optional
+
+MQTTClient.DEBUG = True  # Opcional
 client = MQTTClient(config)
 try:
     asyncio.run(task(client))
 finally:
     client.close()
     asyncio.new_event_loop()
-
