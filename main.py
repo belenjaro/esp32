@@ -62,16 +62,24 @@ def sub_cb(topic, msg, retained):
                 parametros['modo2'] = banmodo
                 cambio = True
                 print(f"Modo {banmodo}")
-        elif topicodeco == "rele1":
-            banrele = msgdeco.upper()
-            if parametros['modo1'] == "manual" and banrele in ["ON", "OFF"]:
-                rele1.value(0 if banrele == "ON" else 1)
-                print(f"Rele {banrele.lower()}")
-        elif topicodeco == "rele2":
-            banrele = msgdeco.upper()
-            if parametros['modo2'] == "manual" and banrele in ["ON", "OFF"]:
-                rele2.value(0 if banrele == "ON" else 1)
-                print(f"Rele {banrele.lower()}")
+        elif topicodeco== "rele1":
+                banrele= msgdeco.upper()
+                if parametros['modo']=="manual":
+                    if banrele == "ON":
+                        rele1.value(0)
+                        print("Rele encendido")
+                    elif banrele == "OFF":
+                        rele1.value(1)
+                        print("Rele apagado")
+        elif topicodeco== "rele2":
+                banrele= msgdeco.upper()
+                if parametros['modo']=="manual":
+                    if banrele == "ON":
+                        rele2.value(0)
+                        print("Rele encendido")
+                    elif banrele == "OFF":
+                        rele2.value(1)
+                        print("Rele apagado")
         elif topicodeco == "periodo":
             parametros['periodo'] = float(msgdeco)
             cambio = True
