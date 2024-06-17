@@ -29,11 +29,11 @@ parametros={
 #d = dht.DHT22(machine.Pin(25))
 
 # relé 1 ventilador 1
-rele1 = machine.Pin(9, machine.Pin.OUT)
+rele1 = machine.Pin(12, machine.Pin.OUT)
 rele1.value(1)  # activo en bajo
 
 # relé 2 ventilador 2
-rele2 = machine.Pin(10, machine.Pin.OUT)
+rele2 = machine.Pin(14, machine.Pin.OUT)
 rele2.value(1)  # activo en bajo
 
 def sub_cb(topic, msg, retained):
