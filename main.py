@@ -30,11 +30,11 @@ parametros={
 
 # relé 1 ventilador 1
 rele1 = machine.Pin(12, machine.Pin.OUT)
-rele1.value(1)  # activo en bajo
+rele1.value(0)  # activo en bajo
 
 # relé 2 ventilador 2
 rele2 = machine.Pin(14, machine.Pin.OUT)
-rele2.value(1)  # activo en bajo
+rele2.value(0)  # activo en bajo
 
 def sub_cb(topic, msg, retained):
     topicodeco = topic.decode()
@@ -66,19 +66,19 @@ def sub_cb(topic, msg, retained):
                 banrele= msgdeco.upper()
                 if parametros['modo']=="manual":
                     if banrele == "ON":
-                        rele1.value(0)
+                        rele1.value(1)
                         print("Rele encendido")
                     elif banrele == "OFF":
-                        rele1.value(1)
+                        rele1.value(0)
                         print("Rele apagado")
         elif topicodeco== "rele2":
                 banrele= msgdeco.upper()
                 if parametros['modo']=="manual":
                     if banrele == "ON":
-                        rele2.value(0)
+                        rele2.value(1)
                         print("Rele encendido")
                     elif banrele == "OFF":
-                        rele2.value(1)
+                        rele2.value(0)
                         print("Rele apagado")
         elif topicodeco == "periodo":
             parametros['periodo'] = float(msgdeco)
