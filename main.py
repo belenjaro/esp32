@@ -9,6 +9,7 @@ import ubinascii
 from machine import unique_id
 import uos as os
 import btree
+from collections import OrderedDict
 #temperatura
 #setpiont es flotante 
 #periodo es flotante
@@ -17,15 +18,16 @@ import btree
 
 CLIENT_ID = ubinascii.hexlify(unique_id()).decode('utf-8')
 
-parametros={
-    'temperatura':0.0,
-    'humedad':0.0,
-    'periodo':30,
-    'setpoint1':23.5,
-    'modo1':'manual',
-    'setpoint2':26.5,
-    'modo2':'manual'
-    }
+#fijar el orden del diccionario
+parametros = OrderedDict([
+    ('temperatura', 0.0),
+    ('humedad', 0.0),
+    ('periodo', 30),
+    ('setpoint1', 23.5),
+    ('modo1', 'manual'),
+    ('setpoint2', 26.5),
+    ('modo2', 'manual')
+])
 # sensor
 d = dht.DHT22(machine.Pin(25))
 
@@ -133,7 +135,7 @@ async def main(client):
     await asyncio.sleep(4)  # Esperar para dar tiempo al broker
     while True:
         try:
-            await client.publish(f"hector/{CLIENT_ID}", json.dumps(parametros), qos=1)
+            await client.publish(f"hector/{CLIENT_ID}", json.dumps(parametros, indent=4), qos=1)
         except OSError as e:
             print(f"Fallo al publicar: {e}")
         await asyncio.sleep(parametros['periodo'])  # Esperar según el periodo definido
