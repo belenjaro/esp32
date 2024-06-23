@@ -12,21 +12,22 @@ import btree
 #temperatura
 #setpiont es flotante 
 #periodo es flotante
-#modo auto/manual
+#modo automatico/manual
 #rele ON/OFF
 
 CLIENT_ID = ubinascii.hexlify(unique_id()).decode('utf-8')
 
 parametros={
     'temperatura':0.0,
-    'periodo':10,
+    'humedad':0.0,
+    'periodo':30,
     'setpoint1':23.5,
-    'modo1':'auto',
+    'modo1':'manual',
     'setpoint2':26.5,
     'modo2':'manual'
     }
 # sensor
-#d = dht.DHT22(machine.Pin(25))
+d = dht.DHT22(machine.Pin(25))
 
 # relé 1 ventilador 1
 rele1 = machine.Pin(12, machine.Pin.OUT)
@@ -52,13 +53,13 @@ def sub_cb(topic, msg, retained):
             cambio = True
         elif topicodeco == "modo1":
             banmodo = msgdeco.lower()
-            if banmodo in ["manual", "auto"]:
+            if banmodo in ["manual", "automatico"]:
                 parametros['modo1'] = banmodo
                 cambio = True
                 print(f"Modo {banmodo}")
         elif topicodeco == "modo2":
             banmodo = msgdeco.lower()
-            if banmodo in ["manual", "auto"]:
+            if banmodo in ["manual", "automatico"]:
                 parametros['modo2'] = banmodo
                 cambio = True
                 print(f"Modo {banmodo}")
@@ -105,16 +106,17 @@ async def conn_han(client):
 async def monitoreo():
     while True:
         try:
-            #d.measure()
-            #parametros['temperatura'] = d.temperature()
-            if parametros['modo1'] == "auto":
+            d.measure()
+            parametros['temperatura'] = d.temperature()
+            parametros['humedad'] = d.humidity()
+            if parametros['modo1'] == "automatico":
                 if parametros['temperatura'] > parametros['setpoint1']:
                     parametros['rele1'] = 'ON'
                     rele1.value(0)  # enciende rele
                 else:
                     parametros['rele1'] = 'OFF'
                     rele1.value(1)  # apaga rele
-            if parametros['modo2'] == "auto":
+            if parametros['modo2'] == "automatico":
                 if parametros['temperatura'] > parametros['setpoint2']:
                     parametros['rele2'] = 'ON'
                     rele2.value(0)  # enciende rele
@@ -124,7 +126,7 @@ async def monitoreo():
         except Exception as e:
             print(f"Error en monitoreo: {e}")
         
-        await asyncio.sleep(1)  # Reduce el tiempo de sleep
+        await asyncio.sleep(parametros['periodo'])
 
 async def main(client):
     await client.connect()
