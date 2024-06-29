@@ -29,7 +29,7 @@ parametros = OrderedDict([
     ('modo2', 'manual')
 ])
 # sensor
-d = dht.DHT22(machine.Pin(25))
+#d = dht.DHT22(machine.Pin(25))
 
 # relé 1 ventilador 1
 rele1 = machine.Pin(12, machine.Pin.OUT)
@@ -108,9 +108,9 @@ async def conn_han(client):
 async def monitoreo():
     while True:
         try:
-            d.measure()
-            parametros['temperatura'] = d.temperature()
-            parametros['humedad'] = d.humidity()
+            #d.measure()
+            #parametros['temperatura'] = d.temperature()
+            #parametros['humedad'] = d.humidity()
             if parametros['modo1'] == "automatico":
                 if parametros['temperatura'] > parametros['setpoint1']:
                     parametros['rele1'] = 'ON'
@@ -135,7 +135,7 @@ async def main(client):
     await asyncio.sleep(4)  # Esperar para dar tiempo al broker
     while True:
         try:
-            await client.publish(f"hector/{CLIENT_ID}", json.dumps(parametros, indent=4), qos=1)
+            await client.publish(f"hector/{CLIENT_ID}", json.dumps(parametros), qos=1)
         except OSError as e:
             print(f"Fallo al publicar: {e}")
         await asyncio.sleep(parametros['periodo'])  # Esperar según el periodo definido
